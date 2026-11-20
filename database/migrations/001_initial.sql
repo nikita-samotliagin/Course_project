@@ -1,0 +1,10 @@
+CREATE TABLE users(id INTEGER PRIMARY KEY,name TEXT NOT NULL,email TEXT NOT NULL UNIQUE COLLATE NOCASE,password_hash TEXT NOT NULL,role TEXT NOT NULL DEFAULT 'analyst' CHECK(role IN ('admin','analyst')));
+CREATE TABLE categories(id INTEGER PRIMARY KEY,name TEXT NOT NULL UNIQUE);
+CREATE TABLE products(id INTEGER PRIMARY KEY,category_id INTEGER NOT NULL REFERENCES categories(id),name TEXT NOT NULL,price_cents INTEGER NOT NULL CHECK(price_cents BETWEEN 0 AND 100000000));
+CREATE TABLE orders(id INTEGER PRIMARY KEY,number TEXT NOT NULL UNIQUE,ordered_on TEXT NOT NULL,customer TEXT NOT NULL CHECK(length(customer) BETWEEN 2 AND 80),channel TEXT NOT NULL CHECK(channel IN ('web','phone','partner')),status TEXT NOT NULL CHECK(status IN ('new','paid','shipped','delivered','cancelled','returned')),version INTEGER NOT NULL DEFAULT 1,created_by INTEGER NOT NULL REFERENCES users(id),created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE order_items(id INTEGER PRIMARY KEY,order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,product_id INTEGER NOT NULL REFERENCES products(id),quantity INTEGER NOT NULL CHECK(quantity BETWEEN 1 AND 10000),unit_price_cents INTEGER NOT NULL CHECK(unit_price_cents BETWEEN 0 AND 100000000),UNIQUE(order_id,product_id));
+CREATE TABLE audit_log(id INTEGER PRIMARY KEY,actor_id INTEGER REFERENCES users(id),action TEXT NOT NULL CHECK(action IN ('create','update','delete')),order_number TEXT NOT NULL,details TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX idx_orders_date ON orders(ordered_on,status);
+CREATE INDEX idx_orders_channel ON orders(channel,ordered_on);
+CREATE INDEX idx_items_order ON order_items(order_id);
+CREATE INDEX idx_products_category ON products(category_id);

@@ -1,0 +1,262 @@
+{
+  "info": {
+    "name": "Пульс заказов API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5065"
+    },
+    {
+      "key": "csrf",
+      "value": ""
+    },
+    {
+      "key": "order_id",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Сессия",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/session"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"csrf\", pm.response.json().csrf);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Вход",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.test\",\n  \"password\": \"DemoPass2026!\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Обновить CSRF после входа",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/session"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set(\"csrf\", pm.response.json().csrf);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Справочники",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/dictionaries"
+      }
+    },
+    {
+      "name": "Статистика",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/dashboard?date_from=2026-10-01&date_to=2026-11-05"
+      }
+    },
+    {
+      "name": "Реестр",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/orders?page=1"
+      }
+    },
+    {
+      "name": "Создать заказ",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/orders",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"number\": \"POSTMAN-001\",\n  \"ordered_on\": \"2026-11-05\",\n  \"customer\": \"Демо-покупатель\",\n  \"channel\": \"web\",\n  \"status\": \"delivered\",\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2,\n      \"unit_price\": \"1000.25\"\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"order_id\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Прочитать заказ",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/orders/{{order_id}}"
+      }
+    },
+    {
+      "name": "Изменить заказ",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/orders/{{order_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"number\": \"POSTMAN-001\",\n  \"ordered_on\": \"2026-11-05\",\n  \"customer\": \"Демо-покупатель\",\n  \"channel\": \"web\",\n  \"status\": \"paid\",\n  \"items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 2,\n      \"unit_price\": \"1000.25\"\n    }\n  ],\n  \"version\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Удалить заказ",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          }
+        ],
+        "url": "{{base_url}}/api/orders/{{order_id}}?version=2"
+      }
+    },
+    {
+      "name": "Аудит",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/audit"
+      }
+    },
+    {
+      "name": "CSV",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/export.csv?date_from=2026-10-01&date_to=2026-11-05"
+      }
+    },
+    {
+      "name": "Регистрация",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Демо-аналитик\",\n  \"email\": \"new@example.test\",\n  \"password\": \"DemoPass2026!\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Выход",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrf}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/api/auth/logout",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}
